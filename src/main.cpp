@@ -35,7 +35,7 @@ int main() {
     }
     glfwSwapInterval(1);
 
-    Shader shader("../shaders/vert.glsl", "../shaders/frag.glsl");
+    Shader shader("../shaders/neon_noise/vert.glsl", "../shaders/neon_noise/frag.glsl");
 
     /* I haven't got this working yet */
     glfwSetWindowSizeCallback(window, []([[maybe_unused]] auto wnd, int w, int h) {
