@@ -17,11 +17,15 @@ int main() {
         return -1;
     }
 
+    std::string shader_name;
+    std::cout << "Give an existing or new shader name: ";
+    std::cin >> shader_name;
+
     // glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
     glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "Toy", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "OpenGLShaderToy", nullptr, nullptr);
 
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
@@ -43,7 +47,7 @@ int main() {
         glViewport(0, 0, w, h);
     });
 
-    Shader shader = CreateShaderFolder("wormy");
+    Shader shader = CreateShaderFolder(shader_name);
 
     float vertices[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
 
