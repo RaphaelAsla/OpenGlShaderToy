@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "../includes/shader.hpp"
+#include "../includes/utils.hpp"
 #include "glad/gl.h"
 
 int WIDTH  = 1000;
@@ -35,14 +36,14 @@ int main() {
     }
     glfwSwapInterval(1);
 
-    Shader shader("../shaders/neon_noise/vert.glsl", "../shaders/neon_noise/frag.glsl");
-
     /* I haven't got this working yet */
     glfwSetWindowSizeCallback(window, []([[maybe_unused]] auto wnd, int w, int h) {
         WIDTH  = w;
         HEIGHT = h;
         glViewport(0, 0, w, h);
     });
+
+    Shader shader = CreateShaderFolder("wormy");
 
     float vertices[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
 

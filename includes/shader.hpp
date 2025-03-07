@@ -17,7 +17,7 @@ class Shader {
 
     Shader() = default;
 
-    Shader(const char* vertex_path, const char* fragment_path) : vertex_path(vertex_path), fragment_path(fragment_path) {
+    Shader(const std::string& vertex_path, const std::string& fragment_path) : vertex_path(vertex_path), fragment_path(fragment_path) {
         LoadShader();
         TrackFileModification();
     }
