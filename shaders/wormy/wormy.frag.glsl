@@ -26,8 +26,8 @@ float sdfBox(vec3 p, vec3 b) {
 }
 
 float sdfMap(vec3 p) {
-    float limits = sdfBox(p - vec3(0.5, 0.2, -3.0), vec3(5.0));
-    limits = abs(limits) - 0.1;
+    float limits = sdfBox(p, vec3(5.0));
+    limits = abs(limits) * 0.1;
 
     vec3 boxOne = p;
     boxOne.x += time * 0.8;
@@ -61,7 +61,7 @@ float sdfMap(vec3 p) {
     boxThree.xy *= rot2D(time * 2.0);
     float columns = sdfBox(boxThree, vec3(0.1));
 
-    return smin(limits, min(min(waveOne, waveTwo), columns), 1.0);
+    return smin(limits, min(min(waveOne, waveTwo), columns), 0.55);
 }
 
 vec3 palette(float t) {
@@ -78,7 +78,7 @@ void main() {
 
     vec3 finalColor = vec3(0.4, 0.4, 1.0);
 
-    vec3 ro = vec3(0.5, 0.2, -3.0);
+    vec3 ro = vec3(0.0, 0.0, 0.0);
     vec3 rd = normalize(vec3(uv, 1.0));
 
     rd.yz *= rot2D((-2.0 + sin(time * 0.5)) * 0.5);
