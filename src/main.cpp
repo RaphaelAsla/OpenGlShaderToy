@@ -19,7 +19,12 @@ int main() {
 
     std::string shader_name;
     std::cout << "Give an existing or new shader name: ";
-    std::cin >> shader_name;
+    std::getline(std::cin, shader_name);
+    if (shader_name.empty()) {
+        std::cerr << "Shader name cannot be empty" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
 
     // glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
     glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
@@ -40,7 +45,6 @@ int main() {
     }
     glfwSwapInterval(1);
 
-    /* I haven't got this working yet */
     glfwSetWindowSizeCallback(window, []([[maybe_unused]] auto wnd, int w, int h) {
         WIDTH  = w;
         HEIGHT = h;
@@ -49,20 +53,37 @@ int main() {
 
     Shader shader = CreateShaderFolder(shader_name);
 
-    float vertices[] = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
+    float vertices[] = {
+        -1.0f, -1.0f,  // Bottom-left
+        1.0f,  -1.0f,  // Bottom-right
+        -1.0f, 1.0f,   // Top-left
+        1.0f,  1.0f    // Top-right
+    };
 
-    unsigned int VBO, VAO;
+    unsigned int indices[] = {
+        0, 1, 2,  // First triangle
+        1, 2, 3   // Second triangle
+    };
+
+    unsigned int VBO, VAO, EBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
 
     glBindVertexArray(VAO);
+
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    float      time = 0.0f;
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
     glm::dvec2 mouse_pos;
 
     while (!glfwWindowShouldClose(window)) {
@@ -77,14 +98,13 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         shader.Use();
-        shader.SetVec2("resolution", WIDTH, HEIGHT);
 
-        time += 0.016f;
-        shader.SetFloat("time", time);
-        shader.SetVec2("mouse_pos", mouse_pos.x, mouse_pos.y);
+        shader.SetVec2("resolution", WIDTH, HEIGHT);
+        shader.SetFloat("time", glfwGetTime());
+        shader.SetVec2("mouse_pos", mouse_pos);
 
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

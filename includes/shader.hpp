@@ -87,9 +87,9 @@ class Shader {
             return;
         }
 
-        unsigned int newProgram = glCreateProgram();
-        unsigned int vertex     = CompileShader(GL_VERTEX_SHADER, vertexCode);
-        unsigned int fragment   = CompileShader(GL_FRAGMENT_SHADER, fragmentCode);
+        unsigned int new_program = glCreateProgram();
+        unsigned int vertex      = CompileShader(GL_VERTEX_SHADER, vertexCode);
+        unsigned int fragment    = CompileShader(GL_FRAGMENT_SHADER, fragmentCode);
 
         if (!vertex || !fragment) {
             std::cout << "Shader compilation failed!" << std::endl;
@@ -98,13 +98,13 @@ class Shader {
             return;
         }
 
-        glAttachShader(newProgram, vertex);
-        glAttachShader(newProgram, fragment);
-        glLinkProgram(newProgram);
+        glAttachShader(new_program, vertex);
+        glAttachShader(new_program, fragment);
+        glLinkProgram(new_program);
 
-        if (!CheckCompileErrors(newProgram, "PROGRAM")) {
+        if (!CheckCompileErrors(new_program, "PROGRAM")) {
             std::cout << "Shader linking failed" << std::endl;
-            glDeleteProgram(newProgram);
+            glDeleteProgram(new_program);
             return;
         }
 
@@ -115,7 +115,7 @@ class Shader {
             glDeleteProgram(ID);
         }
 
-        ID = newProgram;
+        ID = new_program;
         std::cout << "Shader reloaded successfully!\n";
     }
 
