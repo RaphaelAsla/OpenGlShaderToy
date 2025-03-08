@@ -16,52 +16,51 @@ float smin(float d1, float d2, float k) {
     return mix(d2, d1, h) - k * h * (1.0 - h);
 }
 
-float sdfSphere(vec3 p, float radius) {
-    return length(p) - radius;
+float sdfSphere(vec3 p, float r) {
+    return length(p) - r;
 }
 
-float sdfBox(vec3 p, vec3 b) {
-    vec3 q = abs(p) - b;
+float sdfBox(vec3 p, vec3 s) {
+    vec3 q = abs(p) - s;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
 float sdfMap(vec3 p) {
-    float limits = sdfBox(p, vec3(5.0));
-    limits = abs(limits) * 0.1;
+    float hbox = sdfBox(p, vec3(5.0));
+    hbox = abs(hbox) * 0.1;
 
-    vec3 boxOne = p;
-    boxOne.x += time * 0.8;
-    boxOne.z += 1.5;
-    boxOne.y += sin(p.x * 3.14) * 0.5;
-    float id = floor(boxOne.x);
-    boxOne.x = mod(boxOne.x, 0.3) - 0.15;
-    boxOne.y = mod(boxOne.y, 1.0) - 0.5;
-    boxOne.z = mod(boxOne.z, 1.5) - 0.75;
-    boxOne.yz *= rot2D(sin(p.x * 6.28 + time));
-    boxOne.yz *= rot2D(time * 2.0);
-    float waveOne = sdfBox(boxOne, vec3(0.1));
+    vec3 b1 = p;
+    b1.x += time * 0.8;
+    b1.z += 1.5;
+    b1.y += sin(p.x * 3.14) * 0.5;
+    float id = floor(b1.x);
+    b1.x = mod(b1.x, 0.3) - 0.15;
+    b1.y = mod(b1.y, 1.0) - 0.5;
+    b1.z = mod(b1.z, 1.5) - 0.75;
+    b1.yz *= rot2D(sin(p.x * 6.28 + time));
+    b1.xy *= rot2D(-time * 2.0);
+    float w1 = sdfBox(b1, vec3(0.1));
 
-    vec3 boxTwo = p;
-    boxTwo.y += time * 0.8;
-    boxTwo.z += 1.5;
-    boxTwo.x += 0.5;
-    boxTwo.z += sin(p.y * 3.14) * 0.5;
-    id = floor(boxTwo.y);
-    boxTwo.y = mod(boxTwo.y, 0.3) - 0.15;
-    boxTwo.x = mod(boxTwo.x, 1.0) - 0.5;
-    boxTwo.z = mod(boxTwo.z, 1.5) - 0.75;
-    boxTwo.xz *= rot2D(sin(p.y * 6.28 + time));
-    boxTwo.xz *= rot2D(-time * 2.0);
-    float waveTwo = sdfBox(boxTwo, vec3(0.1));
+    vec3 b2 = p;
+    b2.y += time * 0.8;
+    b2.x += 0.5;
+    b2.z += sin(p.y * 3.14) * 0.5;
+    id = floor(b2.y);
+    b2.y = mod(b2.y, 0.3) - 0.15;
+    b2.x = mod(b2.x, 1.0) - 0.5;
+    b2.z = mod(b2.z, 1.5) - 0.75;
+    b2.xz *= rot2D(sin(p.y * 6.28 + time));
+    b2.xy *= rot2D(-time * 2.0);
+    float w2 = sdfBox(b2, vec3(0.1));
 
-    vec3 boxThree = p;
-    boxThree.xy = fract(boxThree.xy) - 0.5;
-    boxThree.z = mod(boxThree.z, 0.2) - 0.1;
-    boxThree.xy *= rot2D(sin(p.z * 6.28 + time));
-    boxThree.xy *= rot2D(time * 2.0);
-    float columns = sdfBox(boxThree, vec3(0.1));
+    vec3 b3 = p;
+    b3.xy = fract(b3.xy) - 0.5;
+    b3.z = mod(b3.z, 0.2) - 0.1;
+    b3.xy *= rot2D(sin(p.z * 6.28 + time));
+    b3.xy *= rot2D(time * 2.0);
+    float c = sdfBox(b3, vec3(0.1));
 
-    return smin(limits, min(min(waveOne, waveTwo), columns), 0.55);
+    return smin(hbox, min(min(w1, w2), c), 0.55);
 }
 
 vec3 palette(float t) {
