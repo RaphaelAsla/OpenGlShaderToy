@@ -25,14 +25,9 @@ float sdfBox(vec3 p, vec3 b) {
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
-float sdfHollowCube(vec3 p, vec3 outerHalfSize, vec3 innerHalfSize) {
-    float outer = sdfBox(p, outerHalfSize);
-    float inner = sdfBox(p, innerHalfSize);
-    return max(outer, -inner);
-}
-
 float sdfMap(vec3 p) {
-    float limits = sdfHollowCube(p - vec3(0.5, 0.2, -3.0), vec3(5.0), vec3(4.9));
+    float limits = sdfBox(p - vec3(0.5, 0.2, -3.0), vec3(5.0));
+    limits = abs(limits) - 0.1;
 
     vec3 boxOne = p;
     boxOne.x += time * 0.8;
@@ -66,7 +61,7 @@ float sdfMap(vec3 p) {
     boxThree.xy *= rot2D(time * 2.0);
     float columns = sdfBox(boxThree, vec3(0.1));
 
-    return smin(limits, min(min(waveOne, waveTwo), columns), 0.5);
+    return smin(limits, min(min(waveOne, waveTwo), columns), 1.0);
 }
 
 vec3 palette(float t) {
