@@ -34,4 +34,6 @@ target_link_libraries(toy
 	OpenGL::GL
 )
 
+target_include_directories(toy SYSTEM PUBLIC "libs/stb_image")
+
 target_compile_options(toy PRIVATE -Wall -Wextra -O3)

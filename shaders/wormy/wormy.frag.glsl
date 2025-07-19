@@ -33,7 +33,6 @@ float sdfMap(vec3 p) {
     b1.x += time * 0.8;
     b1.z += 1.5;
     b1.y += sin(p.x * 3.14) * 0.5;
-    float id = floor(b1.x);
     b1.x = mod(b1.x, 0.3) - 0.15;
     b1.y = mod(b1.y, 1.0) - 0.5;
     b1.z = mod(b1.z, 1.5) - 0.75;
@@ -45,7 +44,6 @@ float sdfMap(vec3 p) {
     b2.y += time * 0.8;
     b2.x += 0.5;
     b2.z += sin(p.y * 3.14) * 0.5;
-    id = floor(b2.y);
     b2.y = mod(b2.y, 0.3) - 0.15;
     b2.x = mod(b2.x, 1.0) - 0.5;
     b2.z = mod(b2.z, 1.5) - 0.75;
@@ -61,14 +59,6 @@ float sdfMap(vec3 p) {
     float c = sdfBox(b3, vec3(0.1));
 
     return smin(hbox, min(min(w1, w2), c), 0.55);
-}
-
-vec3 palette(float t) {
-    vec3 a = vec3(0.5, 0.5, 0.5);
-    vec3 b = vec3(0.5, 0.5, 0.5);
-    vec3 c = vec3(1.0, 1.0, 1.0);
-    vec3 d = vec3(0.263, 0.416, 0.557);
-    return a + b * cos(6.28318 * (c * t * d));
 }
 
 void main() {
@@ -87,13 +77,13 @@ void main() {
     for (i = 0; i < 128; i++) {
         vec3 p = ro + rd * t;
         float d = sdfMap(p);
-        t += d / 2.0;
+        t += d / 3.5;
         if (d < 0.01 || t > 100.0) {
             break;
         }
     }
 
-    finalColor *= palette(t * 0.04 + float(i) * 0.013);
+    finalColor *= vec3(t * 0.04 + float(i) * 0.013);
 
     fragColor = vec4(finalColor, 1.0);
 }
