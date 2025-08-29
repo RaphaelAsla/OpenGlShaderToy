@@ -6,25 +6,24 @@
 #include <fstream>
 #include <glm/glm.hpp>
 #include <iostream>
+#include <sstream>
 
-class Shader {
+class ComputeShader {
   public:
     unsigned int                    ID;
-    std::string                     vertex_path;
-    std::string                     fragment_path;
-    std::filesystem::file_time_type vertex_last_write_time;
-    std::filesystem::file_time_type fragment_last_write_time;
+    std::string                     compute_path;
+    std::filesystem::file_time_type compute_last_write_time;
 
-    Shader() = default;
+    ComputeShader() = default;
 
-    Shader(const std::string& vertex_path, const std::string& fragment_path) : vertex_path(vertex_path), fragment_path(fragment_path) {
+    ComputeShader(const std::string& compute_path) : compute_path(compute_path) {
         LoadShader();
         TrackFileModification();
     }
 
     void Reload() {
-        if (ShaderFilesModified()) {
-            std::cout << "Reloading shaders...\n";
+        if (ShaderFileModified()) {
+            std::cout << "Reloading compute shader...\n";
             LoadShader();
             TrackFileModification();
         }
@@ -32,6 +31,11 @@ class Shader {
 
     void Use() const {
         glUseProgram(ID);
+    }
+
+    void Dispatch(int x, int y, int z = 1) const {
+        glDispatchCompute(x, y, z);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
     }
 
     void SetBool(const std::string& name, bool value) const {
@@ -60,63 +64,46 @@ class Shader {
         glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
     }
 
-    void SetVec4(const std::string& name, const glm::vec4& value) const {
-        glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
-    }
-    void SetVec4(const std::string& name, float x, float y, float z, float w) const {
-        glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
-    }
-
-    void SetMat2(const std::string& name, const glm::mat2& mat) const {
-        glUniformMatrix2fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void SetMat3(const std::string& name, const glm::mat3& mat) const {
-        glUniformMatrix3fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
-    void SetMat4(const std::string& name, const glm::mat4& mat) const {
-        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &mat[0][0]);
-    }
-
   private:
     void LoadShader() {
-        std::string vertexCode, fragmentCode;
-        if (!ReadShaderFile(vertex_path, vertexCode) || !ReadShaderFile(fragment_path, fragmentCode)) {
-            std::cout << "Failed to read shader files\n";
+        std::string computeCode;
+        if (!ReadShaderFile(compute_path, computeCode)) {
+            std::cout << "Failed to read compute shader file: " << compute_path << "\n";
             return;
         }
+
+        std::cout << "Read compute shader file successfully, size: " << computeCode.length() << " bytes\n";
 
         unsigned int new_program = glCreateProgram();
-        unsigned int vertex      = CompileShader(GL_VERTEX_SHADER, vertexCode);
-        unsigned int fragment    = CompileShader(GL_FRAGMENT_SHADER, fragmentCode);
+        unsigned int compute     = CompileShader(GL_COMPUTE_SHADER, computeCode);
 
-        if (!vertex || !fragment) {
-            std::cout << "Shader compilation failed!" << std::endl;
-            glDeleteShader(vertex);
-            glDeleteShader(fragment);
+        if (!compute) {
+            std::cout << "Compute shader compilation failed!" << std::endl;
+            glDeleteShader(compute);
             return;
         }
 
-        glAttachShader(new_program, vertex);
-        glAttachShader(new_program, fragment);
+        std::cout << "Compute shader compiled successfully\n";
+
+        glAttachShader(new_program, compute);
         glLinkProgram(new_program);
 
         if (!CheckCompileErrors(new_program, "PROGRAM")) {
-            std::cout << "Shader linking failed" << std::endl;
+            std::cout << "Compute shader linking failed" << std::endl;
             glDeleteProgram(new_program);
             return;
         }
 
-        glDeleteShader(vertex);
-        glDeleteShader(fragment);
+        std::cout << "Compute shader linked successfully\n";
+
+        glDeleteShader(compute);
 
         if (ID) {
             glDeleteProgram(ID);
         }
 
         ID = new_program;
-        std::cout << "Shader reloaded successfully!\n";
+        std::cout << "Compute shader reloaded successfully!\n";
     }
 
     bool ReadShaderFile(const std::string& path, std::string& code) {
@@ -137,7 +124,7 @@ class Shader {
         glShaderSource(shader, 1, &src, NULL);
         glCompileShader(shader);
 
-        if (!CheckCompileErrors(shader, (type == GL_VERTEX_SHADER ? "VERTEX" : "FRAGMENT"))) {
+        if (!CheckCompileErrors(shader, "COMPUTE")) {
             glDeleteShader(shader);
             return 0;
         }
@@ -145,13 +132,12 @@ class Shader {
         return shader;
     }
 
-    bool ShaderFilesModified() {
-        return (std::filesystem::last_write_time(vertex_path) != vertex_last_write_time) || (std::filesystem::last_write_time(fragment_path) != fragment_last_write_time);
+    bool ShaderFileModified() {
+        return std::filesystem::last_write_time(compute_path) != compute_last_write_time;
     }
 
     void TrackFileModification() {
-        vertex_last_write_time   = std::filesystem::last_write_time(vertex_path);
-        fragment_last_write_time = std::filesystem::last_write_time(fragment_path);
+        compute_last_write_time = std::filesystem::last_write_time(compute_path);
     }
 
     bool CheckCompileErrors(GLuint shader, std::string type) {

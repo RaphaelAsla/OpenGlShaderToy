@@ -1,6 +1,7 @@
-#version 330 core
+#version 430 core
 
-out vec4 fragColor;
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+layout(rgba32f, binding = 0) uniform image2D imgOutput;
 
 uniform vec2 resolution;
 uniform vec2 mouse_pos;
@@ -75,10 +76,13 @@ mat2 rot2D(float angle) {
 }
 
 void main() {
-    vec2 uv = gl_FragCoord.xy / resolution * 2.0 - 1.0;
+    ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
+    if (texelCoord.x >= int(resolution.x) || texelCoord.y >= int(resolution.y)) return;
+
+    vec2 uv = vec2(texelCoord) / resolution * 2.0 - 1.0;
     uv.x *= resolution.x / resolution.y;
 
-    float rot_time = 0.6;
+    float rot_time = time;
 
     mat2 rotation_2d = rot2D(rot_time);
 
@@ -95,7 +99,7 @@ void main() {
 
     float t_enter, t_exit;
     if (!intersectBox(ro, rd, box_min, box_max, t_enter, t_exit)) {
-        fragColor = vec4(0.0);
+        imageStore(imgOutput, texelCoord, vec4(0.0));
         return;
     }
 
@@ -114,5 +118,6 @@ void main() {
         t += STEP_SIZE;
     }
 
-    fragColor = color;
+    imageStore(imgOutput, texelCoord, color);
 }
+

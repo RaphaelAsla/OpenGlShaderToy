@@ -31,6 +31,7 @@ add_executable(toy ${INCLUDE_FILES} ${SOURCE_FILES} ${MAIN_SOURCE})
 target_link_libraries(toy
 	glfw
     glad
+    imgui
 	OpenGL::GL
 )
 
